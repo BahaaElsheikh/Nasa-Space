@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STAGE 3: MARS HABITAT & OUTPOST OPERATIONS — MISSION FAILED</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #070B14;
+      --bg-panel: #101827;
+      --bg-panel-light: #172235;
+      --neon-cyan: #00F0FF;
+      --neon-cyan-glow: rgba(0, 240, 255, 0.25);
+      --amber: #FFB703;
+      --amber-glow: rgba(255, 183, 3, 0.25);
+      --emerald: #00E676;
+      --emerald-glow: rgba(0, 230, 118, 0.25);
+      --martian-orange: #D95D39;
+      --danger: #FF4057;
+      --text-primary: #F4F7FA;
+      --text-muted: #93A4B8;
+      --border-line: rgba(0, 240, 255, 0.24);
+      --border-panel: #20314A;
+      --font-display: 'JetBrains Mono', monospace;
+      --font-sans: 'Inter', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(16, 24, 39, 0.95);
+      border-bottom: 1px solid var(--border-line);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+    }
+
+    .brand-title-group h1 {
+      font-family: var(--font-display);
+      font-size: 15px;
+      color: var(--neon-cyan);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .brand-title-group p {
+      font-size: 11px;
+      color: var(--amber);
+      font-family: var(--font-display);
+    }
+
+    .header-stats {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .hud-pill {
+      background: var(--bg-panel-light);
+      border: 1px solid var(--border-panel);
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-family: var(--font-display);
+      font-size: 11px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hud-pill b {
+      color: var(--neon-cyan);
+    }
+
+    main {
+      flex: 1;
+      padding: 18px;
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Tabs & Phase Navigation */
+    .phase-nav {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-panel);
+      padding-bottom: 10px;
+    }
+
+    .phase-btn {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-panel);
+      color: var(--text-muted);
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .phase-btn.active {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--neon-cyan);
+      color: var(--neon-cyan);
+      box-shadow: 0 0 10px var(--neon-cyan-glow);
+    }
+
+    /* Content Layout */
+    .content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(340px, 0.9fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    @media (max-width: 960px) {
+      .content-grid { grid-template-columns: 1fr; }
+    }
+
+    .sci-panel {
+      background: rgba(16, 24, 39, 0.9);
+      border: 1px solid var(--border-line);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: 13px;
+      color: var(--neon-cyan);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Interactive Mars Map Canvas */
+    #surface-map-canvas {
+      width: 100%;
+      height: 380px;
+      background: #0D1526;
+      border-radius: 6px;
+      border: 1px solid var(--border-panel);
+      cursor: crosshair;
+      display: block;
+    }
+
+    /* Site Selection Cards */
+    .site-card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .site-card {
+      background: rgba(23, 34, 53, 0.7);
+      border: 1px solid var(--border-panel);
+      border-radius: 6px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .site-card:hover {
+      border-color: var(--neon-cyan);
+      background: rgba(23, 34, 53, 0.95);
+    }
+
+    .site-card.selected {
+      border: 2px solid var(--neon-cyan);
+      background: rgba(0, 240, 255, 0.1);
+      box-shadow: 0 0 12px var(--neon-cyan-glow);
+    }
+
+    .site-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .site-name {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: bold;
+      color: #FFF;
+    }
+
+    .site-score-badge {
+      font-family: var(--font-display);
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: var(--bg-panel);
+      color: var(--amber);
+      border: 1px solid var(--border-panel);
+    }
+
+    .site-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .metric-item {
+      background: rgba(7, 11, 20, 0.6);
+      padding: 6px;
+      border-radius: 4px;
+      font-size: 10px;
+    }
+
+    .metric-label {
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .metric-val {
+      font-weight: bold;
+      color: #FFF;
+      font-family: var(--font-display);
+    }
+
+    /* Outpost Facility Modules Grid */
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .module-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-panel);
+      border-radius: 6px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .module-card:hover {
+      border-color: var(--amber);
+    }
+
+    .module-card.deployed {
+      border-color: var(--emerald);
+      background: rgba(0, 230, 118, 0.08);
+      box-shadow: 0 0 10px var(--emerald-glow);
+    }
+
+    .module-icon-wrap {
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 6px;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      border-radius: 6px;
+      background: var(--bg-panel-light);
+      border: 1px solid var(--border-panel);
+    }
+
+    .module-icon-wrap img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    .module-title {
+      font-size: 11px;
+      font-weight: bold;
+      color: #FFF;
+      margin-bottom: 2px;
+    }
+
+    .module-status {
+      font-family: var(--font-display);
+      font-size: 9px;
+      color: var(--text-muted);
+    }
+
+    /* Crew Dialogue / Advice Box */
+    .crew-advice-box {
+      background: rgba(7, 11, 20, 0.75);
+      border: 1px solid var(--border-panel);
+      border-left: 3px solid var(--amber);
+      border-radius: 4px;
+      padding: 12px;
+      margin-top: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .crew-avatar-mini {
+      width: 38px;
+      height: 38px;
+      border-radius: 4px;
+      background: #172235;
+      border: 1px solid var(--amber);
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+
+    .crew-advice-text {
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text-primary);
+    }
+
+    .crew-advice-sender {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: bold;
+      color: var(--amber);
+      margin-bottom: 2px;
+    }
+
+    /* Primary Buttons */
+    .btn-action {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.15) 0%, rgba(0, 240, 255, 0.3) 100%);
+      border: 1px solid var(--neon-cyan);
+      color: var(--neon-cyan);
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    .btn-action:hover:not(:disabled) {
+      background: var(--neon-cyan);
+      color: var(--bg-main);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.5);
+    }
+
+    .btn-action:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      border-color: var(--border-panel);
+      color: var(--text-muted);
+    }
+
+    /* Completion Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 11, 20, 0.92);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-card {
+      background: var(--bg-panel);
+      border: 2px solid var(--neon-cyan);
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand-title-group">
+      <h1>STAGE 03: MARS HABITAT & OUTPOST OPERATIONS</h1>
+      <p>CHRYSE PLANITIA LANDING ZONE · MAVEN 2</p>
+    </div>
+    <div class="header-stats">
+      <div class="hud-pill">SOL: <b id="sol-counter">01</b></div>
+      <div class="hud-pill">POWER: <b id="stat-power">100%</b></div>
+      <div class="hud-pill">OXYGEN: <b id="stat-oxygen">100%</b></div>
+      <div class="hud-pill">WATER: <b id="stat-water">100%</b></div>
+      <div class="hud-pill">SCORE: <b id="stat-score" style="color:var(--emerald);">100 PTS</b></div>
+    </div>
+  </header>
+
+  <main>
+    <nav class="phase-nav">
+      <button id="tab-site" class="phase-btn active">1. SITE SELECTION</button>
+      <button id="tab-deploy" class="phase-btn">2. HABITAT DEPLOYMENT</button>
+      <button id="tab-resources" class="phase-btn">3. OUTPOST OPERATIONS</button>
+    </nav>
+
+    <div class="content-grid">
+      <!-- Left Panel: Interactive Visualizer & Map -->
+      <section class="sci-panel">
+        <div class="panel-title">
+          <span id="view-title">MARTIAN SURFACE RADAR & SITE SCOUTING</span>
+          <span id="view-mode-tag" style="color:var(--amber); font-size:10px;">GDD MISSION 1 & 2</span>
+        </div>
+
+        <canvas id="surface-map-canvas"></canvas>
+
+        <div class="crew-advice-box">
+          <div class="crew-avatar-mini" id="advice-avatar">👨‍🚀</div>
+          <div>
+            <div class="crew-advice-sender" id="advice-sender">Commander Rodaina</div>
+            <div class="crew-advice-text" id="advice-text">
+              "We have touched down at Chryse Planitia. Evaluate candidate sites: avoid steep slopes and high-dust basins. We need stable bedrock and proximity to subsurface ice."
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Panel: Operations & Actions -->
+      <aside class="sci-panel">
+        <div class="panel-title">
+          <span>MISSION DIRECTIVES</span>
+          <span style="color:var(--emerald); font-size:10px;">AUTHENTIC NASA CONTEXT</span>
+        </div>
+
+        <!-- Section 1: Candidate Sites -->
+        <div id="section-site-selection">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
+            Select one candidate landing zone for the permanent MAVEN 2 settlement:
+          </p>
+          <div class="site-card-list">
+            <div class="site-card selected" data-site="chryse">
+              <div class="site-card-header">
+                <span class="site-name">Chryse Planitia (Alpha-1)</span>
+                <span class="site-score-badge" style="color:var(--emerald);">RECOMMENDED</span>
+              </div>
+              <p style="font-size:11px; color:var(--text-muted);">Smooth plains near Viking 1 site. Low seismic hazard, optimal solar exposure, moderate ice depth (1.8m).</p>
+              <div class="site-metrics-grid">
+                <div class="metric-item"><span class="metric-label">SLOPE</span><span class="metric-val">2.4° (Flat)</span></div>
+                <div class="metric-item"><span class="metric-label">DUST RISK</span><span class="metric-val">Low</span></div>
+                <div class="metric-item"><span class="metric-label">STABILITY</span><span class="metric-val">High (98%)</span></div>
+              </div>
+            </div>
+
+            <div class="site-card" data-site="jezero">
+              <div class="site-card-header">
+                <span class="site-name">Jezero Basin (Delta-4)</span>
+                <span class="site-score-badge" style="color:var(--amber);">HIGH SCIENCE</span>
+              </div>
+              <p style="font-size:11px; color:var(--text-muted);">Ancient delta deposits. Rich geological science targets, but steep crater rim slopes increase rover tip hazard.</p>
+              <div class="site-metrics-grid">
+                <div class="metric-item"><span class="metric-label">SLOPE</span><span class="metric-val">9.8° (Steep)</span></div>
+                <div class="metric-item"><span class="metric-label">DUST RISK</span><span class="metric-val">Medium</span></div>
+                <div class="metric-item"><span class="metric-label">STABILITY</span><span class="metric-val">Moderate (74%)</span></div>
+              </div>
+            </div>
+
+            <div class="site-card" data-site="arcadia">
+              <div class="site-card-header">
+                <span class="site-name">Arcadia Planitia (Ice-9)</span>
+                <span class="site-score-badge" style="color:var(--neon-cyan);">SHALLOW ICE</span>
+              </div>
+              <p style="font-size:11px; color:var(--text-muted);">Very shallow subsurface ice (0.8m), but high seasonal dust accumulation severely degrades photovoltaic arrays.</p>
+              <div class="site-metrics-grid">
+                <div class="metric-item"><span class="metric-label">SLOPE</span><span class="metric-val">4.1° (Gentle)</span></div>
+                <div class="metric-item"><span class="metric-label">DUST RISK</span><span class="metric-val">High</span></div>
+                <div class="metric-item"><span class="metric-label">STABILITY</span><span class="metric-val">Good (85%)</span></div>
+              </div>
+            </div>
+          </div>
+
+          <button id="btn-confirm-site" class="btn-action">CONFIRM SITE SELECTION ▶</button>
+        </div>
+
+        <!-- Section 2: Deployment -->
+        <div id="section-deployment" style="display:none;">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">
+            Deploy essential surface infrastructure in order of operational priority:
+          </p>
+          <div class="module-grid">
+            <div class="module-card" data-mod="habitat">
+              <div class="module-icon-wrap" id="icon-habitat">⛺</div>
+              <div class="module-title">Pressurized Habitat</div>
+              <div class="module-status">READY</div>
+            </div>
+            <div class="module-card" data-mod="solar">
+              <div class="module-icon-wrap" id="icon-solar">⚡</div>
+              <div class="module-title">Solar & RTG Array</div>
+              <div class="module-status">READY</div>
+            </div>
+            <div class="module-card" data-mod="moxie">
+              <div class="module-icon-wrap" id="icon-moxie">💨</div>
+              <div class="module-title">MOXIE Oxygen Unit</div>
+              <div class="module-status">READY</div>
+            </div>
+            <div class="module-card" data-mod="water">
+              <div class="module-icon-wrap" id="icon-water">💧</div>
+              <div class="module-title">Subsurface Ice Well</div>
+              <div class="module-status">READY</div>
+            </div>
+            <div class="module-card" data-mod="storage">
+              <div class="module-icon-wrap" id="icon-storage">📦</div>
+              <div class="module-title">Logistics Silo</div>
+              <div class="module-status">READY</div>
+            </div>
+          </div>
+
+          <button id="btn-deploy-all" class="btn-action" style="margin-top:16px;">DEPLOY SELECTED INFRASTRUCTURE ▶</button>
+        </div>
+
+        <!-- Section 3: Operations -->
+        <div id="section-operations" style="display:none;">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
+            Settlement systems online. Run verification diagnostic loops to complete the expedition:
+          </p>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="hud-pill" style="justify-content:space-between;">
+              <span>MOXIE Purity:</span> <b style="color:var(--emerald);">99.2% Pure O2</b>
+            </div>
+            <div class="hud-pill" style="justify-content:space-between;">
+              <span>Water Extraction Rate:</span> <b style="color:var(--emerald);">4.8 L / Hr</b>
+            </div>
+            <div class="hud-pill" style="justify-content:space-between;">
+              <span>Net Power Balance:</span> <b style="color:var(--emerald);">+12.4 kW Surplus</b>
+            </div>
+            <div class="hud-pill" style="justify-content:space-between;">
+              <span>Radiation Dosimetry:</span> <b style="color:var(--neon-cyan);">0.24 mSv/day (Safe Sheltered)</b>
+            </div>
+          </div>
+
+          <button id="btn-finish-level3" class="btn-action" style="background:#00E676; color:#070B14; border-color:#00E676; margin-top:18px;">
+            🏆 FINALIZE OUTPOST & COMPLETE MISSION
+          </button>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Level 3 Completion Modal -->
+  <div id="modal-complete" class="modal-overlay" style="display:none;">
+    <div class="modal-card">
+      <div style="display:inline-block; padding:4px 10px; background:rgba(0,230,118,0.15); border:1px solid var(--emerald); color:var(--emerald); border-radius:4px; font-family:var(--font-display); font-size:11px;">
+        ● OUTPOST OPERATIONS ESTABLISHED
+      </div>
+      <h2 style="font-family:var(--font-display); color:#FFF; font-size:20px;">MISSION FAILED — TURNED SUCCESS!</h2>
+      <p style="font-size:13px; line-height:1.6; color:var(--text-muted);">
+        The MAVEN 2 expedition has secured a safe habitat at Chryse Planitia. Powered by solar and RTG systems, producing local oxygen via atmospheric MOXIE conversion, and tapping subsurface water ice, humanity's first protected settlement stands operational.
+      </p>
+      <div style="background:rgba(7,11,20,0.6); padding:12px; border-radius:4px; border:1px solid var(--border-panel); font-size:12px; color:var(--neon-cyan); font-family:var(--font-display);">
+        FINAL STAGE SCORE: <span id="final-modal-score">100 / 100 PTS</span> · RANK: MISSION READY
+      </div>
+      <button id="btn-proceed-results" class="btn-action" style="background:var(--neon-cyan); color:var(--bg-main);">
+        VIEW FINAL EXPEDITION EVALUATION ▶
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // State
+    const state = {
+      phase: 1,
+      selectedSite: 'chryse',
+      deployedModules: new Set(),
+      score: 100,
+      attempts: 1,
+      completed: false
+    };
+
+    // Preload stage 3 sprites with procedural fallbacks
+    const spriteCache = {};
+    const SPRITES = {
+      habitat: 'sprites/habitat.png',
+      solar: 'sprites/solar_farm.png',
+      water: 'sprites/water_source.png',
+      moxie: 'sprites/oxygen_generator.png',
+      storage: 'sprites/storage.png'
+    };
+
+    Object.entries(SPRITES).forEach(([key, path]) => {
+      const img = new Image();
+      img.onload = () => { spriteCache[key] = img; };
+      img.onerror = () => { spriteCache[key] = null; };
+      img.src = path;
+    });
+
+    // Canvas Radar Simulation
+    const canvas = document.getElementById('surface-map-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = (canvas.width = canvas.clientWidth || 600);
+    let height = (canvas.height = canvas.clientHeight || 380);
+
+    const siteCoordinates = {
+      chryse: { x: width * 0.45, y: height * 0.5, name: "Chryse Planitia" },
+      jezero: { x: width * 0.25, y: height * 0.35, name: "Jezero Crater" },
+      arcadia: { x: width * 0.72, y: height * 0.65, name: "Arcadia Planitia" }
+    };
+
+    function renderMap() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Martian terrain gradient
+      const bgGrad = ctx.createRadialGradient(width / 2, height / 2, 40, width / 2, height / 2, width * 0.7);
+      bgGrad.addColorStop(0, '#1E1215');
+      bgGrad.addColorStop(0.6, '#130C10');
+      bgGrad.addColorStop(1, '#070B14');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      // Radar grid lines
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.12)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < width; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+      }
+      for (let y = 0; y < height; y += 40) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+      }
+
+      // Elevation contour rings
+      ctx.strokeStyle = 'rgba(217, 93, 57, 0.25)';
+      ctx.beginPath(); ctx.ellipse(width * 0.45, height * 0.5, 90, 60, 0.2, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(width * 0.25, height * 0.35, 60, 45, -0.4, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(width * 0.72, height * 0.65, 80, 50, 0.1, 0, Math.PI * 2); ctx.stroke();
+
+      // Render Candidate Sites
+      Object.entries(siteCoordinates).forEach(([key, coords]) => {
+        const isSelected = (state.selectedSite === key);
+
+        // Ping ring
+        ctx.strokeStyle = isSelected ? '#00F0FF' : 'rgba(255, 183, 3, 0.6)';
+        ctx.lineWidth = isSelected ? 2 : 1;
+        ctx.beginPath();
+        ctx.arc(coords.x, coords.y, isSelected ? 18 : 10, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Center dot
+        ctx.fillStyle = isSelected ? '#00F0FF' : '#FFB703';
+        ctx.beginPath();
+        ctx.arc(coords.x, coords.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Label
+        ctx.fillStyle = isSelected ? '#FFF' : '#94A3B8';
+        ctx.font = isSelected ? 'bold 11px "JetBrains Mono", monospace' : '10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(coords.name, coords.x, coords.y - 24);
+      });
+
+      // If phase 2/3 and modules deployed, render base overlay at Chryse
+      if (state.phase >= 2 && state.deployedModules.size > 0) {
+        const target = siteCoordinates[state.selectedSite];
+        ctx.fillStyle = 'rgba(0, 230, 118, 0.2)';
+        ctx.beginPath();
+        ctx.arc(target.x, target.y, 32, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#00E676';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = '#00E676';
+        ctx.font = 'bold 9px "JetBrains Mono", monospace';
+        ctx.fillText(`BASE ACTIVE (${state.deployedModules.size}/5)`, target.x, target.y + 36);
+      }
+    }
+
+    renderMap();
+    window.addEventListener('resize', () => {
+      width = canvas.width = canvas.clientWidth || 600;
+      height = canvas.height = canvas.clientHeight || 380;
+      renderMap();
+    });
+
+    // Site Selection Interaction
+    const siteCards = document.querySelectorAll('.site-card');
+    siteCards.forEach(card => {
+      card.onclick = () => {
+        siteCards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        state.selectedSite = card.getAttribute('data-site');
+        renderMap();
+
+        const adviceText = document.getElementById('advice-text');
+        const adviceSender = document.getElementById('advice-sender');
+        if (state.selectedSite === 'chryse') {
+          adviceSender.textContent = "Bahaa & Alaa (Science & Power)";
+          adviceText.textContent = "Chryse Planitia provides flat bedrock, minimal tip hazard for rovers, and excellent solar irradiance. Viking 1 telemetry confirms surface integrity.";
+        } else if (state.selectedSite === 'jezero') {
+          adviceSender.textContent = "Alaa (Geology Specialist)";
+          adviceText.textContent = "Jezero offers unmatched ancient sediment samples, but 9.8° slopes increase anchoring risk. Extra rover traversal energy will be required.";
+        } else {
+          adviceSender.textContent = "Mora (Life-Support Specialist)";
+          adviceText.textContent = "Arcadia Planitia has shallow ground ice, but intense seasonal dust storms will severely coat solar panels, requiring frequent dust brushing.";
+        }
+      };
+    });
+
+    // Confirm Site
+    document.getElementById('btn-confirm-site').onclick = () => {
+      switchPhase(2);
+    };
+
+    // Phase Switcher
+    function switchPhase(phaseNum) {
+      state.phase = phaseNum;
+      document.querySelectorAll('.phase-btn').forEach((b, i) => {
+        b.classList.toggle('active', i + 1 === phaseNum);
+      });
+
+      document.getElementById('section-site-selection').style.display = (phaseNum === 1) ? 'block' : 'none';
+      document.getElementById('section-deployment').style.display = (phaseNum === 2) ? 'block' : 'none';
+      document.getElementById('section-operations').style.display = (phaseNum === 3) ? 'block' : 'none';
+
+      const adviceText = document.getElementById('advice-text');
+      const adviceSender = document.getElementById('advice-sender');
+
+      if (phaseNum === 2) {
+        document.getElementById('view-title').textContent = "SURFACE DEPLOYMENT PROTOCOL";
+        adviceSender.textContent = "Hamdy (Logistics Specialist)";
+        adviceText.textContent = "Touchdown confirmed! Select modules to initiate habitat pressurization, power generation, and MOXIE intake filters.";
+      } else if (phaseNum === 3) {
+        document.getElementById('view-title').textContent = "SETTLEMENT TELEMETRY & OPERATIONS";
+        adviceSender.textContent = "MICA (AI Mission Guide)";
+        adviceText.textContent = "All core life-support subsystems are operational. Atmospheric CO2 extraction purity is 99.2%. Colony parameters verified.";
+      }
+      renderMap();
+    }
+
+    document.getElementById('tab-site').onclick = () => switchPhase(1);
+    document.getElementById('tab-deploy').onclick = () => switchPhase(2);
+    document.getElementById('tab-resources').onclick = () => switchPhase(3);
+
+    // Module Deployment Clicking
+    const moduleCards = document.querySelectorAll('.module-card');
+    moduleCards.forEach(m => {
+      m.onclick = () => {
+        const modKey = m.getAttribute('data-mod');
+        if (state.deployedModules.has(modKey)) {
+          state.deployedModules.delete(modKey);
+          m.classList.remove('deployed');
+          m.querySelector('.module-status').textContent = 'READY';
+        } else {
+          state.deployedModules.add(modKey);
+          m.classList.add('deployed');
+          m.querySelector('.module-status').textContent = 'DEPLOYED';
+        }
+        renderMap();
+      };
+    });
+
+    document.getElementById('btn-deploy-all').onclick = () => {
+      moduleCards.forEach(m => {
+        const modKey = m.getAttribute('data-mod');
+        state.deployedModules.add(modKey);
+        m.classList.add('deployed');
+        m.querySelector('.module-status').textContent = 'DEPLOYED';
+      });
+      renderMap();
+      setTimeout(() => switchPhase(3), 350);
+    };
+
+    // Finalize Outpost Completion
+    document.getElementById('btn-finish-level3').onclick = () => {
+      document.getElementById('modal-complete').style.display = 'flex';
+    };
+
+    document.getElementById('btn-proceed-results').onclick = () => {
+      if (state.completed) return;
+      state.completed = true;
+
+      console.log('[Stage 3] Completing stage 3, posting message to parent...');
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'STAGE_COMPLETE',
+          stage: 3,
+          score: state.score
+        }, window.location.origin || '*');
+      } else {
+        alert('Mission Complete! Outpost established on Mars.');
+        window.location.href = '../../index.html';
+      }
+    };
+  </script>
+</body>
+</html>

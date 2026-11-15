@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mars Rover Mission Control</title>
+<style>
+:root{--bg:#141b26;--panel:#1d2736;--panel2:#26344a;--line:#3b4d6b;--cream:#f6e6c4;--mv:#35b89a;--ob:#4a8fd8;--en:#e0b43a;--sc:#a066c8;--bad:#e0523f;--ok:#5cc47a;--warn:#f0a030;--txt:#e8eef7;--mut:#8fa2bd}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--txt);font:13px/1.4 "Courier New",ui-monospace,monospace;display:flex;flex-direction:column;overflow:hidden}
+button{font:inherit;cursor:pointer;color:var(--txt);background:var(--panel2);border:2px solid var(--line);padding:5px 9px;border-radius:3px}
+button:hover:not(:disabled){border-color:var(--cream)}button:disabled{opacity:.4;cursor:not-allowed}
+button.on{background:#2c5d6b;border-color:#6fd3e6}
+header{display:flex;gap:10px;align-items:center;padding:6px 10px;background:#0f1520;border-bottom:2px solid var(--line);flex-wrap:wrap}
+header h1{font-size:15px;margin:0;color:var(--cream);letter-spacing:1px}
+.maps{display:flex;gap:6px}.maps button{display:flex;gap:6px;align-items:center}
+.badge{font-size:10px;padding:1px 5px;border-radius:2px;color:#111;font-weight:bold}.easy{background:var(--ok)}.med{background:var(--warn)}.hard{background:var(--bad)}
+.sp{flex:1}
+main{flex:1;min-height:0;display:grid;grid-template-columns:230px minmax(0,1fr) 310px;gap:8px;padding:8px}
+.col{display:flex;flex-direction:column;gap:8px;min-height:0;min-width:0}
+.panel{background:var(--panel);border:2px solid var(--line);border-radius:4px;padding:8px;min-height:0;overflow:auto}
+.panel h2{margin:0 0 6px;font-size:12px;color:var(--cream);text-transform:uppercase;letter-spacing:1px}
+#palette{flex:1}
+.cat{margin-bottom:8px}.cat h3{margin:0 0 4px;font-size:11px;color:var(--mut)}
+.blk{display:flex;align-items:center;gap:6px;width:100%;text-align:left;margin-bottom:4px;border-width:2px;border-left-width:8px}
+.blk[data-c=mv]{border-left-color:var(--mv)}.blk[data-c=ob]{border-left-color:var(--ob)}.blk[data-c=en]{border-left-color:var(--en)}.blk[data-c=sc]{border-left-color:var(--sc)}
+.blk:disabled{border-style:dashed}
+#mapwrap{position:relative;flex:1;min-height:200px;border:2px solid var(--line);border-radius:4px;overflow:hidden;background:#000}
+#cv{width:100%;height:100%;display:block;image-rendering:pixelated;cursor:grab}
+.hud{position:absolute;pointer-events:none;background:#0d1420cc;border:2px solid var(--line);padding:4px 8px;border-radius:3px;max-width:60%}
+#hudObj{left:8px;top:8px}#hudCmd{right:8px;top:8px;min-width:200px}#hudMsg{left:8px;bottom:8px}
+.bar{height:8px;background:#0b111a;border:1px solid var(--line);margin-top:3px}.bar i{display:block;height:100%;background:var(--ok);width:0}
+#ws{height:250px;display:flex;flex-direction:column}
+#ctrls{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;align-items:center}
+#list{flex:1;overflow:auto;background:#121a27;border:2px dashed var(--line);padding:4px;border-radius:3px}
+#list.over{border-color:var(--cream)}
+.row{display:flex;gap:6px;align-items:center;background:var(--panel2);border:2px solid var(--line);border-left-width:8px;padding:3px 6px;margin-bottom:3px;border-radius:3px;flex-wrap:wrap}
+.row[data-c=mv]{border-left-color:var(--mv)}.row[data-c=ob]{border-left-color:var(--ob)}.row[data-c=en]{border-left-color:var(--en)}.row[data-c=sc]{border-left-color:var(--sc)}
+.row.cur{outline:2px solid #fff;background:#3a5a3a}.row.done{opacity:.55}.row.err{border-color:var(--bad);background:#4a2424}.row.inv{border-color:var(--warn)}
+.row .n{color:var(--mut);width:18px}.row .h{cursor:grab;color:var(--mut)}.row input,.row select{width:64px;background:#0d1420;color:var(--txt);border:1px solid var(--line);font:inherit;padding:2px}
+.row select{width:auto;max-width:150px}.row .st{margin-left:auto;font-size:11px;color:var(--mut)}.row .msg{flex-basis:100%;color:var(--warn);font-size:11px}
+.row button{padding:0 6px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:1px 8px}.kv span:nth-child(odd){color:var(--mut)}
+.sec{margin-bottom:9px;padding-bottom:6px;border-bottom:1px dashed var(--line)}
+.warn{color:var(--warn)}.crit{color:var(--bad)}.ok{color:var(--ok)}
+.eq{display:flex;justify-content:space-between;gap:6px;font-size:11px}.s-Active{color:var(--ok)}.s-Standby{color:var(--mut)}.s-Inactive{color:var(--mut)}.s-Warning{color:var(--warn)}.s-Unavailable{color:var(--bad)}
+.tabs{display:flex;gap:4px;margin-bottom:6px}
+#log{font-size:11px;flex:1}.le{border-bottom:1px solid #2a3850;padding:1px 0}.le.warning{color:var(--warn)}.le.error{color:var(--bad)}.le.sci{color:#cfa8ee}.le.ok{color:var(--ok)}
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:9;padding:16px}.modal.show{display:flex}
+.card{background:var(--panel);border:3px solid var(--cream);max-width:620px;width:100%;max-height:90vh;overflow:auto;padding:16px;border-radius:5px}
+.card h2{margin:0 0 8px;font-size:20px;color:var(--cream)}.card.bad h2{color:var(--bad)}.card.good h2{color:var(--ok)}
+.card .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.card textarea{width:100%;height:90px;background:#0d1420;color:var(--txt);border:2px solid var(--line);font:inherit}
+.tip{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);background:#f6e6c4;color:#2b2113;border:3px solid #7a5b2e;padding:8px 12px;max-width:70%;z-index:3;border-radius:4px;display:none}
+.tip button{margin-left:8px;color:#2b2113;background:#e6cf9c;border-color:#7a5b2e}
+small,.mut{color:var(--mut)}
+@media(max-width:1100px){main{grid-template-columns:200px 1fr 260px}}
+</style></head><body>
+<header><h1>▲ MARS MISSION CONTROL</h1>
+<div class="maps" id="maps"></div><span class="sp"></span>
+<span id="roverName">No rover</span>
+<button id="bImport">Import rover</button><button id="bTraj" class="on">Trajectory: ON</button><button id="bFollow" class="on">Follow</button><button id="bFit">Fit map</button><button id="bHelp">? Tips</button></header>
+<main>
+<div class="col"><div class="panel" id="palette"><h2>Command labels</h2><div id="pal"></div></div></div>
+<div class="col">
+ <div id="mapwrap"><canvas id="cv"></canvas>
+  <div class="hud" id="hudObj"></div><div class="hud" id="hudCmd"></div><div class="hud" id="hudMsg" style="display:none"></div>
+  <div class="tip" id="tip"></div></div>
+ <div class="panel" id="ws"><div id="ctrls">
+  <b>PROGRAM</b><button id="bRun">▶ RUN</button><button id="bAuto" style="background:#24495c;border-color:#00F0FF;color:#00F0FF;font-weight:bold" title="Auto-plan path to science targets and landing pad">⚡ AUTOPILOT</button><button id="bPause">❚❚ PAUSE</button><button id="bResume">▶ RESUME</button><button id="bStep">⏭ STEP</button><button id="bReset">↺ RESET</button><button id="bClear">✕ CLEAR</button><span id="prog" class="mut"></span></div>
+  <div id="list"></div></div>
+</div>
+<div class="col"><div class="panel" id="side" style="flex:1;display:flex;flex-direction:column">
+ <div class="tabs"><button id="tT" class="on">Rover condition</button><button id="tL">Mission log</button></div>
+ <div id="cond" style="flex:1;overflow:auto"></div><div id="log" style="display:none;overflow:auto"></div></div></div>
+</main>
+<div class="modal" id="modal"><div class="card" id="card"></div></div>
+<script src="scripts/catalog.js"></script>
+<script src="scripts/main.js"></script>
+</body></html>
